@@ -21,6 +21,7 @@
     <div>
         <v-row style="max-height:80vh" class="px-4 my-0">
             <v-col cols="12" v-for="c in chat" :key="c.id">
+                <span style="font-size:0.65em; color: grey" v-show="c.from == id">{{ username }}</span><br>
                 <div :class="c.from == id ? 'chat-them' : 'chat-me'" class="chat">
                     {{ c.message }}
                 </div>
@@ -47,7 +48,8 @@ export default {
     data() {
         return {
             chat: [],
-            message: ''
+            message: '',
+            username: ''
         }
     },
     created: () => {
@@ -82,6 +84,7 @@ export default {
                     if (response == null) { return }
                     var status = response.data.status
                     if (status.code == 200) {
+                        this.username = response.data.data.username
                         var messages = response.data.data.messages
 
                         this.chat = []
