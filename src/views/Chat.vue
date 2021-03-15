@@ -21,7 +21,7 @@
     <div>
         <v-row style="max-height:80vh" class="px-4 my-0">
             <v-col cols="12" v-for="c in chat" :key="c.id">
-                <div :class="c.from == 0 ? 'chat-me' : 'chat-them'" class="chat">
+                <div :class="c.from == id ? 'chat-them' : 'chat-me'" class="chat">
                     {{ c.message }}
                 </div>
             </v-col>
@@ -37,6 +37,9 @@
     </div>
 </template>
 <script>
+import { bus } from '@/main'
+import ChatService from '@/services/ChatService'
+
 export default {
     props: {
         id: String
@@ -47,6 +50,9 @@ export default {
             message: ''
         }
     },
+    created: () => {
+        bus.$emit('setTitle', 'Chat')
+    },
     mounted: function () {
         this.getMessages()
     },
@@ -56,18 +62,35 @@ export default {
             if (!chats) {
                 chats = []
             }
-            if (this.message.trim() != '') {
-                chats.push({ from: 0, message: this.message })
-                localStorage.setItem('chat_'+this.id, JSON.stringify(chats))
-                this.chat.push({ from: 0, message: this.message })
+            if (this.message.trim() != '' && this.message.length <= 200) {
+
+                ChatService.sendMessage(this.id, this.message).then(
+                    (response) => {
+                        if (response == null) { return }
+                        var status = response.data.status
+                        if (status.code == 200) {
+                            this.getMessages()
+                        }
+                    }
+                )
             }
             this.message = ''
         },
         getMessages: function () {
-            var chats = JSON.parse(localStorage.getItem('chat_'+ this.id))
-            if (chats) {
-                this.chat = chats
-            }
+            ChatService.getMessages(this.id).then(
+                (response) => {
+                    if (response == null) { return }
+                    var status = response.data.status
+                    if (status.code == 200) {
+                        var messages = response.data.data.messages
+
+                        this.chat = []
+                        messages.forEach(e => {
+                            this.chat.push(e)
+                        });
+                    }
+                }
+            )
         }
     }
 }

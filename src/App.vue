@@ -41,20 +41,35 @@
 </template>
 
 <script>
+import UserService from '@/services/UserService'
+import { bus } from '@/main'
+
 export default {
   name: 'App',
   data() {
     return {
       drawer: false,
-      title: this.$route.meta.title,
+      title: '',
       loggedIn: false
+    }
+  },
+  created: function () {
+    bus.$on('setTitle', function (e) {
+      this.title = e
+    })
+
+    var logged = UserService.verifyUser()
+    if (!logged) {
+      this.loggedIn = false
+    } else {
+      this.loggedIn = true
     }
   },
   watch: {
     '$route': function (n, o) {
       if(n != o) {
-        var logged = localStorage.getItem('loggedIn')
-        if (!logged || logged != 'true') {
+        var logged = UserService.verifyUser()
+        if (!logged) {
           this.loggedIn = false
         } else {
           this.loggedIn = true
@@ -64,11 +79,7 @@ export default {
   },
   methods: {
     logout: function () {
-      var users = localStorage.getItem('users')
       localStorage.clear()
-      if (users) {
-        localStorage.setItem('users', users)
-      }
       this.$router.push('/login')
     }
   }

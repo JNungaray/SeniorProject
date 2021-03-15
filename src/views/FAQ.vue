@@ -13,3 +13,11 @@
         </p>
     </div>
 </template>
+<script>
+import { bus } from '@/main'
+export default {
+    created: () => {
+        bus.$emit('setTitle', 'FAQ')
+    }
+}
+</script>

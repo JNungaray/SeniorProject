@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import UserService from '@/services/UserService'
 
 Vue.use(VueRouter)
 
@@ -47,7 +48,7 @@ router.beforeEach((to, from, next) => {
     const authrequired = !publicPages.includes(to.path)
     // include authentication here
 
-    if (authrequired && (!localStorage.getItem('loggedIn') || localStorage.getItem('loggedIn') != 'true')) {
+    if (authrequired && !UserService.verifyUser()) {
         console.log('route needs authentication')
         return next('/login')
     }

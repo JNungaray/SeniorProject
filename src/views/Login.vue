@@ -32,6 +32,9 @@
     </div>
 </template>
 <script>
+import UserService from '@/services/UserService'
+import { bus } from '@/main'
+
 export default {
     data() {
         return {
@@ -42,42 +45,26 @@ export default {
             message: ''
         }
     },
+    created: () => {
+        bus.$emit('setTitle', 'Login')
+    },
     methods: {
         login: function () {
-            var isUser = false;
-            var users = JSON.parse(localStorage.getItem('users'))
-            if (users) {
-                users.forEach(e => {
-                    if (e.username == this.form.username && e.password == this.form.password) {
-                        isUser = true
+            var data = {
+                username: this.form.username,
+                password: this.form.password
+            }
+            UserService.login(data).then(
+                (response) => {
+                    var status = response.data.status
+                    if (status.code == 200) {
+                        UserService.setUser(response.data.data)
+                        this.$router.push('/')
+                    } else {
+                        this.message = status.message
                     }
-                })
-            }
-
-            if (isUser) {
-                localStorage.setItem('loggedIn', 'true')
-                localStorage.setItem('username', this.form.username)
-                localStorage.setItem('chat_1', JSON.stringify(
-                    [
-                        { from: 0, message: 'HEY!' },
-                        { from: 1, message: 'Hello' },
-                        { from: 0, message: 'How are you doing?' },
-                        { from: 1, message: 'I\'m doing good, yourself?' }
-                    ]
-                ))
-                localStorage.setItem('chat_2', JSON.stringify(
-                    [
-                        { from: 1, message: 'What up?' },
-                        { from: 0, message: 'Hey' },
-                        { from: 1, message: 'So we gonna me up later?' },
-                        { from: 0, message: 'Sure. What time were you thinking?' },
-                        { from: 1, message: 'Probably around 1 because I still need to go take my dog for a walk' }
-                    ]
-                ))
-                this.$router.push('/')
-            } else {
-                this.message = 'Username or password is incorrect'
-            }
+                }
+            )
         }
     }
 }

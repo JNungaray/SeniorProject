@@ -39,6 +39,8 @@
     </div>
 </template>
 <script>
+import UserService from '@/services/UserService'
+import { bus } from '@/main'
 export default {
     data() {
         return {
@@ -50,31 +52,32 @@ export default {
             message: ''
         }
     },
+    created: () => {
+        bus.$emit('setTitle', 'Register')
+    },
     methods: {
         register: function () {
-            var valid = true;
-            var users = JSON.parse(localStorage.getItem('users'))
-            if (users) {
-                users.forEach(e => {
-                    if (e.username == this.form.username) {
-                        valid = false
-                        this.message = "Username is taken"
-                    }
-                })
-            }
-
             if (this.form.password.trim() == '' || this.form.password != this.form.passwordagain) {
                 this.message = "Password is invalid or does not match"
             }
 
-            if (valid) {
-                if (!users) {
-                    users = []
-                }
-                users.push({username: this.form.username, password: this.form.password})
-                localStorage.setItem('users', JSON.stringify(users))
-                this.$router.push('/')
+            var data = {
+                username: this.form.username,
+                password: this.form.password,
+                repassword: this.form.passwordagain
             }
+
+            UserService.register(data).then(
+                (request) => {
+                    var status = request.data.status
+
+                    if (status.code == 200) {
+                        this.$router.push('/login')
+                    } else {
+                        this.message = status.message
+                    }
+                }
+            )
         }
     }
 }
