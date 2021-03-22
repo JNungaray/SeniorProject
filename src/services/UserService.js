@@ -39,6 +39,27 @@ const UserService = {
             method: "post",
             data: JSON.stringify(data)
         })
+    },
+
+    searchUsers (term) {
+        if (!this.verifyUser()) {
+            return {
+                data: {
+                    status: 405
+                }
+            }
+        }
+        var data = {
+            term: term,
+            action: 'search',
+            id: this.getUserObject().id
+        }
+
+        return axios({
+            url: 'http://localhost:8888/api/UserController.php',
+            method: "post",
+            data: JSON.stringify(data)
+        })
     }
 }
 
